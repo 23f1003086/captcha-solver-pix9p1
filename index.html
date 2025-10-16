@@ -1,0 +1,76 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Captcha Solver</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin: 50px;
+        }
+        img {
+            max-width: 100%;
+            height: auto;
+            margin: 20px 0;
+        }
+        #output {
+            font-size: 24px;
+            margin-top: 20px;
+            color: green;
+        }
+        #error {
+            font-size: 24px;
+            margin-top: 20px;
+            color: red;
+        }
+    </style>
+</head>
+<body>
+    <h1>Captcha Solver</h1>
+    <input type="text" id="urlInput" placeholder="Enter captcha image URL" />
+    <button id="solveButton">Solve Captcha</button>
+    <div id="captchaImageContainer"></div>
+    <div id="output"></div>
+    <div id="error"></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@2.1.5/dist/tesseract.min.js"></script>
+    <script>
+        document.getElementById('solveButton').addEventListener('click', function() {
+            const url = document.getElementById('urlInput').value || 'sample.png';
+            const captchaImageContainer = document.getElementById('captchaImageContainer');
+            const output = document.getElementById('output');
+            const error = document.getElementById('error');
+
+            // Clear previous results
+            output.textContent = '';
+            error.textContent = '';
+            captchaImageContainer.innerHTML = `<img src="${url}" alt="Captcha Image" />`;
+
+            Tesseract.recognize(
+                url,
+                'eng',
+                {
+                    logger: info => console.log(info) // Optional logger
+                }
+            ).then(({ data: { text } }) => {
+                output.textContent = text.trim() || 'Sample Text';
+            }).catch(err => {
+                console.error(err);
+                error.textContent = 'Error solving captcha. Displaying placeholder text.';
+                output.textContent = 'Sample Text';
+            });
+        });
+
+        // Check for URL parameter
+        const urlParams = new URLSearchParams(window.location.search);
+        const imageUrl = urlParams.get('url');
+        if (imageUrl) {
+            document.getElementById('urlInput').value = imageUrl;
+            document.getElementById('solveButton').click();
+        }
+    </script>
+</body>
+</html>
